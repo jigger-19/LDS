@@ -1,0 +1,52 @@
+name: Dagelijkse Lead Scraper
+
+on:
+  schedule:
+    # Elke werkdag om 07:30 Nederlandse tijd (05:30 UTC in zomer, 06:30 UTC in winter)
+    # Pas de tijd aan naar jouw voorkeur
+    - cron: '30 6 * * 1-5'
+  workflow_dispatch:
+    # Handmatig triggeren via GitHub UI (handig voor testen)
+    inputs:
+      test_run:
+        description: 'Test run (true = alleen 1 lead)'
+        required: false
+        default: 'false'
+        type: string
+
+jobs:
+  scrape-leads:
+    name: Verzamel & analyseer leads
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🐍 Python 3.12 instellen
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: 📦 Dependencies installeren
+        run: |
+          pip install anthropic
+
+      - name: 🔍 Lead scraper uitvoeren
+        env:
+          GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
+          ANTHROPIC_API_KEY:     ${{ secrets.ANTHROPIC_API_KEY }}
+          PAGESPEED_API_KEY:     ${{ secrets.PAGESPEED_API_KEY }}
+          GMAIL_USER:            ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD:    ${{ secrets.GMAIL_APP_PASSWORD }}
+          LEADS_TO_EMAIL:        ${{ secrets.LEADS_TO_EMAIL }}
+        run: |
+          python scripts/lead_scraper.py
+
+      - name: ❌ Notificatie bij fout
+        if: failure()
+        run: |
+          echo "Lead scraper mislukt op $(date). Check de logs hierboven."
+          # Optioneel: voeg hier een Slack/e-mail notificatie toe
