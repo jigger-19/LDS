@@ -4,7 +4,7 @@ on:
   schedule:
     # Elke werkdag om 07:30 Nederlandse tijd (05:30 UTC in zomer, 06:30 UTC in winter)
     # Pas de tijd aan naar jouw voorkeur
-    - cron: '55 10 * * *'
+    - cron: '53 10 * * *'
   workflow_dispatch:
     # Handmatig triggeren via GitHub UI (handig voor testen)
     inputs:
