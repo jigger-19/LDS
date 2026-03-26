@@ -36,7 +36,7 @@ GMAIL_PASS       = os.environ["GMAIL_APP_PASSWORD"]
 LEADS_TO_EMAIL   = os.environ["LEADS_TO_EMAIL"]
 
 LEADS_PER_DAY    = 5
-MIN_WEBSITE_AGE  = 4   # jaren — alleen sites ouder dan dit
+MIN_WEBSITE_AGE  = 2   # jaren — alleen sites ouder dan dit
 SLEEP_BETWEEN    = 1.5 # seconden tussen API calls
 
 # Branches & zoekopdrachten (roteert dagelijks zodat je steeds verse leads krijgt)
@@ -131,7 +131,7 @@ def is_weak_website(details: dict, ps: dict) -> bool:
     if not details.get("website"):
         return True   # geen website = directe kandidaat
     if ps.get("available") and ps.get("perf_score") is not None:
-        if ps["perf_score"] < 50:
+        if ps["perf_score"] < 60:
             return True
     return False
 
@@ -153,7 +153,7 @@ def pick_daily_searches() -> list[tuple]:
         if branch not in seen_branches or len(selected) < 3:
             selected.append(config)
             seen_branches.add(branch)
-        if len(selected) >= 6:
+        if len(selected) >= 10:
             break
     return selected
 
@@ -178,7 +178,7 @@ def collect_leads(target: int = LEADS_PER_DAY) -> list[dict]:
         city = random.Random(day_seed + hash(query)).choice(cities)
 
         print(f"  Zoek: '{query}' in {city} ({branch})")
-        businesses = find_businesses(query, city, max_results=15)
+        businesses = find_businesses(query, city, max_results=25)
 
         for biz in businesses:
             if len(leads) >= target:
